@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![forbid(unsafe_code)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 //! # Binary Canonical Serialization (BCS)
 //!
@@ -303,9 +304,14 @@
 //! # Ok(())}
 //! ```
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+#[cfg(feature = "std")]
 mod de;
 mod error;
-mod ser;
+pub mod ser;
+#[cfg(feature = "std")]
 pub mod test_helpers;
 
 /// Variable length sequences in BCS are limited to max length of 2^31 - 1.
@@ -314,9 +320,9 @@ pub const MAX_SEQUENCE_LENGTH: usize = (1 << 31) - 1;
 /// Maximal allowed depth of BCS data, counting only structs and enums.
 pub const MAX_CONTAINER_DEPTH: usize = 500;
 
+#[cfg(feature = "std")]
 pub use de::{from_bytes, from_bytes_seed, from_bytes_seed_with_limit, from_bytes_with_limit};
 pub use error::{Error, Result};
-pub use ser::{
-    is_human_readable, serialize_into, serialize_into_with_limit, serialized_size,
-    serialized_size_with_limit, to_bytes, to_bytes_with_limit,
-};
+pub use ser::{is_human_readable, serialize_with_flavor, serialized_size};
+#[cfg(feature = "alloc")]
+pub use ser::{to_bytes, to_bytes_with_limit};

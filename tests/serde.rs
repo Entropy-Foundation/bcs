@@ -274,9 +274,7 @@ fn uleb_encoding_and_variant() {
     // Error comes from serde
     assert_eq!(
         from_bytes::<Test>(&invalid_variant),
-        Err(Error::Custom(
-            "invalid value: integer `5`, expected variant index 0 <= i < 2".into()
-        ))
+        Err(Error::SerdeCustom)
     );
 
     let invalid_bytes = vec![0x80, 0x80, 0x80, 0x80];
@@ -299,12 +297,7 @@ fn uleb_encoding_and_variant() {
 
     let invalid_uleb = vec![0x80, 0x80, 0x80, 0x80, 0x0f];
     // Error comes from Serde because ULEB integer is valid.
-    assert_eq!(
-        from_bytes::<Test>(&invalid_uleb),
-        Err(Error::Custom(
-            "invalid value: integer `4026531840`, expected variant index 0 <= i < 2".into()
-        ))
-    );
+    assert_eq!(from_bytes::<Test>(&invalid_uleb), Err(Error::SerdeCustom));
 
     let invalid_uleb = vec![0x80, 0x80, 0x80, 0x00];
     // Uleb decoder must reject non-canonical forms.

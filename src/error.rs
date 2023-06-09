@@ -1,48 +1,68 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+use core::fmt;
 use serde::{de, ser};
-use std::fmt;
-use thiserror::Error;
 
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = core::result::Result<T, E>;
 
-#[derive(Clone, Debug, Error, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Error {
-    #[error("unexpected end of input")]
     Eof,
-    #[error("I/O error: {0}")]
+    #[cfg(feature = "std")]
     Io(String),
-    #[error("exceeded max sequence length: {0}")]
     ExceededMaxLen(usize),
-    #[error("exceeded max container depth while entering: {0}")]
     ExceededContainerDepthLimit(&'static str),
-    #[error("expected boolean")]
     ExpectedBoolean,
-    #[error("expected map key")]
     ExpectedMapKey,
-    #[error("expected map value")]
     ExpectedMapValue,
-    #[error("keys of serialized maps must be unique and in increasing order")]
     NonCanonicalMap,
-    #[error("expected option type")]
     ExpectedOption,
-    #[error("{0}")]
-    Custom(String),
-    #[error("sequence missing length")]
+    SerdeCustom,
     MissingLen,
-    #[error("not supported: {0}")]
     NotSupported(&'static str),
-    #[error("remaining input")]
     RemainingInput,
-    #[error("malformed utf8")]
     Utf8,
-    #[error("ULEB128 encoding was not minimal in size")]
     NonCanonicalUleb128Encoding,
-    #[error("ULEB128-encoded integer did not fit in the target size")]
     IntegerOverflowDuringUleb128Decoding,
 }
 
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use Error::*;
+        write!(
+            f,
+            "{}",
+            match self {
+                Eof => "unexpected end of input",
+                #[cfg(feature = "std")]
+                Io(s) => s,
+                ExceededMaxLen(_) => "exceeded max sequence length",
+                ExceededContainerDepthLimit(_) => {
+                    "exceeded max container depth while entering"
+                }
+                ExpectedBoolean => "expected boolean",
+                ExpectedMapKey => "expected map key",
+                ExpectedMapValue => "expected map value",
+                NonCanonicalMap => {
+                    "keys of serialized maps must be unique and in increasing order"
+                }
+                ExpectedOption => "expected option type",
+                SerdeCustom => "Serde Custom Error",
+                MissingLen => "sequence missing length",
+                NotSupported(_) => "not supported",
+                RemainingInput => "remaining input",
+                Utf8 => "malformed utf8",
+                NonCanonicalUleb128Encoding => "ULEB128 encoding was not minimal in size",
+                IntegerOverflowDuringUleb128Decoding => {
+                    "ULEB128-encoded integer did not fit in the target size"
+                }
+            },
+        )
+    }
+}
+
+#[cfg(feature = "std")]
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
         Error::Io(err.to_string())
@@ -50,13 +70,15 @@ impl From<std::io::Error> for Error {
 }
 
 impl ser::Error for Error {
-    fn custom<T: fmt::Display>(msg: T) -> Self {
-        Error::Custom(msg.to_string())
+    fn custom<T: fmt::Display>(_msg: T) -> Self {
+        Error::SerdeCustom
     }
 }
 
 impl de::Error for Error {
-    fn custom<T: fmt::Display>(msg: T) -> Self {
-        Error::Custom(msg.to_string())
+    fn custom<T: fmt::Display>(_msg: T) -> Self {
+        Error::SerdeCustom
     }
 }
+
+impl serde::ser::StdError for Error {}
