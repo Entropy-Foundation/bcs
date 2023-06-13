@@ -35,6 +35,7 @@ where
     Ok(storage.finalize())
 }
 
+#[cfg(feature = "alloc")]
 pub fn is_human_readable() -> bool {
     let mut output = Vec::new();
     let serializer = Serializer::new(&mut output, crate::MAX_CONTAINER_DEPTH);
