@@ -25,6 +25,7 @@ pub enum Error {
     Utf8,
     NonCanonicalUleb128Encoding,
     IntegerOverflowDuringUleb128Decoding,
+    CollectStrError,
 }
 
 impl fmt::Display for Error {
@@ -57,6 +58,7 @@ impl fmt::Display for Error {
                 IntegerOverflowDuringUleb128Decoding => {
                     "ULEB128-encoded integer did not fit in the target size"
                 }
+                CollectStrError => "Error while processing `collect_str` during serialization",
             },
         )
     }

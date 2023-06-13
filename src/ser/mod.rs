@@ -1,4 +1,6 @@
-use serde::{ser, Serialize};
+#[cfg(feature = "alloc")]
+use serde::ser;
+use serde::Serialize;
 
 use crate::{Error, Result, MAX_CONTAINER_DEPTH};
 

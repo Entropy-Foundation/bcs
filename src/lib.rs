@@ -323,6 +323,6 @@ pub const MAX_CONTAINER_DEPTH: usize = 500;
 #[cfg(feature = "std")]
 pub use de::{from_bytes, from_bytes_seed, from_bytes_seed_with_limit, from_bytes_with_limit};
 pub use error::{Error, Result};
-pub use ser::{serialize_with_flavor, serialized_size};
 #[cfg(feature = "alloc")]
 pub use ser::{is_human_readable, to_bytes, to_bytes_with_limit};
+pub use ser::{serialize_with_flavor, serialized_size};
