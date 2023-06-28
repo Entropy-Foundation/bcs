@@ -2,6 +2,9 @@
 use serde::ser;
 use serde::Serialize;
 
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
 use crate::{Error, Result, MAX_CONTAINER_DEPTH};
 
 use self::{flavors::Flavor, serializer::Serializer};
